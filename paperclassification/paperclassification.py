@@ -4,7 +4,7 @@ import random
 
 def SimpleEntityExtraction():
 	paperid_path = []
-	fr = open('microsoft/index.txt','rb')
+	fr = open('../index.txt','rb')
 	for line in fr:
 		arr = line.strip('\r\n').split('\t')
 		paperid = arr[2]
@@ -57,7 +57,7 @@ def SimpleEntityExtraction():
 
 def SimpleAttributeExtraction():
 	paperid_path = []
-	fr = open('microsoft/index.txt','rb')
+	fr = open('../index.txt','rb')
 	for line in fr:
 		arr = line.strip('\r\n').split('\t')
 		paperid = arr[2]
@@ -125,7 +125,7 @@ def SimpleAttributeExtraction():
 
 def SimpleLabelExtraction():
 	paperid2conf = {}
-	fr = open('microsoft/Papers.txt','rb')
+	fr = open('../Papers.txt','rb')
 	for line in fr:
 		arr = line.strip('\r\n').split('\t')
 		paperid,conf = arr[0],arr[7]
@@ -163,12 +163,12 @@ def Gini(n,values):
 	return ret
 
 def Output(entry):
-	print entry[0],0.001*int(1000.0*entry[1][0]),0.001*int(1000.0*entry[1][1]),entry[2], \
-		0.001*int(1000.0*entry[2][0]/(entry[2][0]+entry[2][1])), \
-		0.001*int(1000.0*entry[2][2]/(entry[2][2]+entry[2][3]))
+	print(entry[0],0.001*int(1000.0*entry[1][0]),0.001*int(1000.0*entry[1][1]),entry[2], 
+		0.001*int(1000.0*entry[2][0]/(entry[2][0]+entry[2][1])), 
+		0.001*int(1000.0*entry[2][2]/(entry[2][2]+entry[2][3])))
 
 def OutputStr(entry):
-	print entry[0],entry[1][0],entry[1][1],entry[2]
+	print(entry[0],entry[1][0],entry[1][1],entry[2])
 
 def DecisionTreeFirstFeature():
 	positive = 'kdd' # SIGKDD Conference on Knowledge Discovery and Data Mining
@@ -191,10 +191,10 @@ def DecisionTreeFirstFeature():
 	for [paper,label] in paper2label.items():
 		nY += 1
 		if label: nYpos += 1
-	print '----- -----'
-	print 'All','KDD','NotKDD'
-	print nY,nYpos,nY-nYpos,0.001*int(1000.0*nYpos/nY)
-	print ''
+	print('----- -----')
+	print('All','KDD','NotKDD')
+	print(nY,nYpos,nY-nYpos,0.001*int(1000.0*nYpos/nY))
+	print('')
 	HY = Entropy(nY,[nYpos])
 	GiniY = Gini(nY,[nYpos])
 
@@ -219,21 +219,21 @@ def DecisionTreeFirstFeature():
 
 	bestattributeset = set()
 
-	print '----- First Feature to Select in ID3: Information Gain -----'
+	print('----- First Feature to Select in ID3: Information Gain -----')
 	OutputStr(['Attribute',['InfoGain','DeltaGini'],['HasWord & KDD','HasWord & NotKDD','NoWord & KDD','NoWord & NotKDD']])
 	sorted_attribute_metrics = sorted(attribute_metrics,key=lambda x:-x[1][0])
 	for i in range(0,5):
 		Output(sorted_attribute_metrics[i])
 		bestattributeset.add(sorted_attribute_metrics[i][0])
-	print ''
+	print('')
 
-	print '----- First Feature to Select in CART: Delta Gini index -----'
+	print('----- First Feature to Select in CART: Delta Gini index -----')
 	OutputStr(['Attribute',['InfoGain','DeltaGini'],['HasWord & KDD','HasWord & NotKDD','NoWord & KDD','NoWord & NotKDD']])
 	sorted_attribute_metrics = sorted(attribute_metrics,key=lambda x:-x[1][1])
 	for i in range(0,5):
 		Output(sorted_attribute_metrics[i])
 		bestattributeset.add(sorted_attribute_metrics[i][0])
-	print ''
+	print('')
 
 	fw = open('bestattributes.txt','w')
 	for attribute in sorted(bestattributeset):
@@ -267,30 +267,30 @@ def NaiveBayes():
 	fr.close()
 
 	for [paper,attributes] in paper2attributes.items():
-		print paper,attributes
+		print(paper,attributes)
 
 	nY,nYpos = 0,0
 	for [paper,label] in paper2label.items():
 		nY += 1
 		if label: nYpos += 1
-	print ''
-	print '----- -----'
-	print 'All','KDD','NotKDD'
-	print nY,nYpos,nY-nYpos,0.001*int(1000.0*nYpos/nY)
-	print '----- Prior Probability -----'
+	print('')
+	print('----- -----')
+	print('All','KDD','NotKDD')
+	print(nY,nYpos,nY-nYpos,0.001*int(1000.0*nYpos/nY))
+	print('----- Prior Probability -----')
 	PYesPrior = 1.0*nYpos/nY
 	PNoPrior = 1.0*(nY-nYpos)/nY
-	print 'P(KDD) = ',0.001*int(1000.0*PYesPrior)
-	print 'P(NotKDD) = ',0.001*int(1000.0*PNoPrior)
-	print ''
+	print('P(KDD) = ',0.001*int(1000.0*PYesPrior))
+	print('P(NotKDD) = ',0.001*int(1000.0*PNoPrior))
+	print('')
 
 	allpapers = paper2label.keys()
 	random.shuffle(allpapers)
 	for i in range(0,5):
 		paper = allpapers[i]
-		print '----- Paper ',i,':',paper,'-->',paper2label[paper],' -----'
+		print('----- Paper ',i,':',paper,'-->',paper2label[paper],' -----')
 		attributes = paper2attributes[paper]
-		print '----- Likelihood -----'
+		print('----- Likelihood -----')
 		PYesLikelihoodAll = 1.0
 		PNoLikelihoodAll = 1.0
 		for [attribute,papers] in attribute2papers.items():
@@ -318,15 +318,15 @@ def NaiveBayes():
 				PNoLikelihood = 1.0*nNoLikelihood/(nY-nYpos)
 				PYesLikelihoodAll *= PYesLikelihood
 				PNoLikelihoodAll *= PNoLikelihood
-		print 'P(X|KDD) = ',0.001*int(1000.0*PYesLikelihoodAll)
-		print 'P(X|NotKDD) = ',0.001*int(1000.0*PNoLikelihoodAll)
-		print '----- Posteriori Probability -----'
+		print('P(X|KDD) = ',0.001*int(1000.0*PYesLikelihoodAll))
+		print('P(X|NotKDD) = ',0.001*int(1000.0*PNoLikelihoodAll))
+		print('----- Posteriori Probability -----')
 		PYesPost = PYesPrior*PYesLikelihoodAll
 		PNoPost = PNoPrior*PNoLikelihoodAll
-		print 'P(KDD|X) ~ P(X|KDD)P(KDD)',0.0001*int(10000.0*PYesPost)
-		print 'P(NotKDD|X) ~ P(X|NotKDD)P(NotKDD)',0.0001*int(10000.0*PNoPost)
-		print '--> Prediction:',(PYesPost > PNoPost)
-		print ''
+		print('P(KDD|X) ~ P(X|KDD)P(KDD)',0.0001*int(10000.0*PYesPost))
+		print('P(NotKDD|X) ~ P(X|NotKDD)P(NotKDD)',0.0001*int(10000.0*PNoPost))
+		print('--> Prediction:',(PYesPost > PNoPost))
+		print('')
 
 #SimpleEntityExtraction()
 #SimpleAttributeExtraction()
