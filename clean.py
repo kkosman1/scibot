@@ -10,11 +10,11 @@ def clean():
 		del papers[col]
 
 	#read in paper keywords to df
-	keywords = pd.read_csv('PaperKeywords.txt', sep="\t", names=['pid', 'keyword', 'kid']_
-	del papers['kid']
+	keywords = pd.read_csv('PaperKeywords.txt', sep="\t", names=['pid', 'keyword', 'kid'])
+	del keywords['kid']
 	
 	#read in paper author affiliations to df
-	affiliation = pd.read_csv('PaperAuthorAffiliation.txt', sep="\t", names=['pid', 'aid', 'fid', 'aff_org', 'aff', 'sid'])
+	affiliation = pd.read_csv('PaperAuthorAffiliations.txt', sep="\t", names=['pid', 'aid', 'fid', 'aff_org', 'aff', 'sid'])
 	del affiliation['aff_org']
 
 	#read in authors to df
@@ -25,8 +25,10 @@ def clean():
 	print("SECOND ONE")
 	print(papers.head())
 	df = df.join(papers)
-	df = df.join(keywords)
-	df = df.join(affiliation)
+	df = pd.merge(df, keywords, on='pid')
+	df = pd.merge(df, affiliation, on='pid')
+	#df = df.join(keywords)
+	#df = df.join(affiliation)
 	df = pd.merge(df, authors, on='aid')	
 
 	print(df.head())
