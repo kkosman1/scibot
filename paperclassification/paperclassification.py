@@ -1,19 +1,21 @@
 #!/usr/bin/python
 from numpy import log2
 import random
+import pandas as pd
 
 def SimpleEntityExtraction():
 	paperid_path = []
-	fr = open('../index.txt','rb')
-	for line in fr:
-		arr = line.strip('\r\n').split('\t')
-		paperid = arr[2]
-		path = 'text/'+arr[0]+'/'+arr[1]+'.txt'
-		paperid_path.append([paperid,path])
-	fr.close()
+
+	df = pd.read_csv('database.txt', sep = '\t')
+
+	for index, row in df.iterrows():
+		path = 'text/' + str(row['folder']) + '/' +  str(row['pdfid']) + '.txt'
+		paperid_path.append([row['pid'], path])
+
 	phrase2count = {}
-	for [paperid,path] in paperid_path:
-		fr = open(path,'rb')
+
+	for pid, path in paperid_path:
+		fr = open(path,'r')
 		for line in fr:
 			arr = line.strip('\r\n').split(' ')
 			n = len(arr)
@@ -57,15 +59,15 @@ def SimpleEntityExtraction():
 
 def SimpleAttributeExtraction():
 	paperid_path = []
-	fr = open('../index.txt','rb')
-	for line in fr:
-		arr = line.strip('\r\n').split('\t')
-		paperid = arr[2]
-		path = 'text/'+arr[0]+'/'+arr[1]+'.txt'
-		paperid_path.append([paperid,path])
-	fr.close()
+
+	df = pd.read_csv('database.txt', sep = '\t')
+
+	for index, row in df.iterrows():
+		path = 'text/' + row['folder'] + '/' +  row['pdfid'] + '.txt'
+		paperid_path.append([row['pid'], path])
+
 	index,nindex = [{}],1 # phrase's index
-	fr = open('phrase2count.txt','rb')
+	fr = open('phrase2count.txt','r')
 	for line in fr:
 		arr = line.strip('\r\n').split('\t')
 		phrase = arr[0]
@@ -90,7 +92,7 @@ def SimpleAttributeExtraction():
 	fw = open('paper2attributes.txt','w')
 	for [paperid,path] in paperid_path:
 		attributeset = set()
-		fr = open(path,'rb')
+		fr = open(path,'r')
 		for line in fr:
 			words = line.strip('\r\n').split(' ')
 			wordslower = line.strip('\r\n').lower().split(' ')
@@ -125,18 +127,18 @@ def SimpleAttributeExtraction():
 
 def SimpleLabelExtraction():
 	paperid2conf = {}
-	fr = open('../Papers.txt','rb')
-	for line in fr:
-		arr = line.strip('\r\n').split('\t')
-		paperid,conf = arr[0],arr[7]
-		paperid2conf[paperid] = conf
-	fr.close()
+	df = pd.read_csv('database.txt', sep = '\t')
+
+	for pid in df['pid']:
+		conf = df.get_value(pid, 'conf')
+		paperid2conf[pid] = conf
+
 	fw = open('paper2attributes2label.txt','w')
-	fr = open('paper2attributes.txt','rb')
+	fr = open('paper2attributes.txt','r')
 	for line in fr:
 		arr = line.strip('\r\n').split('\t')
 		paperid = arr[0]
-		if not paperid in paperid2conf: continue
+		if not pid in paperid2conf: continue
 		conf = paperid2conf[paperid]
 		fw.write(arr[0]+'\t'+conf+'\t'+arr[1]+'\n')
 	fr.close()
@@ -163,8 +165,8 @@ def Gini(n,values):
 	return ret
 
 def Output(entry):
-	print(entry[0],0.001*int(1000.0*entry[1][0]),0.001*int(1000.0*entry[1][1]),entry[2], 
-		0.001*int(1000.0*entry[2][0]/(entry[2][0]+entry[2][1])), 
+	print(entry[0],0.001*int(1000.0*entry[1][0]),0.001*int(1000.0*entry[1][1]),entry[2],
+		0.001*int(1000.0*entry[2][0]/(entry[2][0]+entry[2][1])),
 		0.001*int(1000.0*entry[2][2]/(entry[2][2]+entry[2][3])))
 
 def OutputStr(entry):
@@ -173,7 +175,7 @@ def OutputStr(entry):
 def DecisionTreeFirstFeature():
 	positive = 'kdd' # SIGKDD Conference on Knowledge Discovery and Data Mining
 	paper2label,paper2attributes,attribute2papers = {},{},{}
-	fr = open('paper2attributes2label.txt','rb')
+	fr = open('paper2attributes2label.txt','r')
 	for line in fr:
 		arr = line.strip('\r\n').split('\t')
 		paper = arr[0]
@@ -214,7 +216,7 @@ def DecisionTreeFirstFeature():
 		GiniXyesY = 1.0*nXyesY/nY * Gini(nXyesY,[nXyesYpos])
 		GiniXnoY = 1.0*nXnoY/nY * Gini(nXnoY,[nXnoYpos])
 		DeltaGini = GiniY-(GiniXyesY+GiniXnoY)
-		
+
 		attribute_metrics.append([attribute,[InfoGain,DeltaGini],[nXyesYpos,nXyesY-nXyesYpos,nXnoYpos,nXnoY-nXnoYpos]])
 
 	bestattributeset = set()
@@ -243,14 +245,14 @@ def DecisionTreeFirstFeature():
 def NaiveBayes():
 	positive = 'kdd' # SIGKDD Conference on Knowledge Discovery and Data Mining
 	bestattributeset = set()
-	fr = open('bestattributes.txt','rb')
+	fr = open('bestattributes.txt','r')
 	for line in fr:
 		attribute = line.strip('\r\n')
 		bestattributeset.add(attribute)
 	fr.close()
 
 	paper2label,paper2attributes,attribute2papers = {},{},{}
-	fr = open('paper2attributes2label.txt','rb')
+	fr = open('paper2attributes2label.txt','r')
 	for line in fr:
 		arr = line.strip('\r\n').split('\t')
 		attributeset = set(arr[2].split(','))
@@ -330,10 +332,6 @@ def NaiveBayes():
 
 #SimpleEntityExtraction()
 #SimpleAttributeExtraction()
-#SimpleLabelExtraction()
-
+SimpleLabelExtraction()
 #DecisionTreeFirstFeature()
-
 #NaiveBayes()
-
-
